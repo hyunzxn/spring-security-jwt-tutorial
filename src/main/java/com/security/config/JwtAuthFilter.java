@@ -12,8 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -34,22 +32,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 		FilterChain filterChain) throws ServletException, IOException {
 
 		final String authHeader = request.getHeader(AUTHORIZATION);
-			final String userEmail;
-			final String jwtToken;
+		final String userEmail;
+		final String jwtToken;
 
 		if (authHeader == null || !authHeader.startsWith("Bearer")) {
-			 filterChain.doFilter(request, response);
-			 return;
+			filterChain.doFilter(request, response);
+			return;
 		}
 
-		jwtToken = authHeader.substring(7);
+		jwtToken = authHeader.substring(7); // 띄어쓰기 다음부터 오는 String 값만 가져오겠다.
 		userEmail = jwtUtils.extractUsername(jwtToken);
 
 		if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
 			UserDetails userDetails = userRepository.findUserByEmail(userEmail);
 
-			final boolean isTokenValid;
+			// 헤더에 있던 토큰이 유효할 시, 유저를 인증된 상태로 바꿔주는 과정!
 			if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
 				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
 					userDetails, null, userDetails.getAuthorities());

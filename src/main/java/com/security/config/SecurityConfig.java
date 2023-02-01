@@ -1,23 +1,16 @@
 package com.security.config;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,7 +20,7 @@ import com.security.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@EnableWebSecurity
+@Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -45,9 +38,9 @@ public class SecurityConfig {
 			.authenticated() // 보안검사를 하겠다
 			.and()
 			.sessionManagement()
-			.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 요청이 끝나면 Session 상태를 날린다?
 			.and()
-			.authenticationProvider(authenticationProvider())
+			.authenticationProvider(authenticationProvider()) // AuthenticationProvider로 DaoAuthenticationProvider 쓰겠다.
 			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
@@ -74,6 +67,7 @@ public class SecurityConfig {
 
 	@Bean
 	public UserDetailsService userDetailsService() {
+		// 스프링 시큐리티가 기본적으로 가지고 있는 UserDetailsService를 재정의하는 것.
 		return new UserDetailsService() {
 			@Override
 			public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

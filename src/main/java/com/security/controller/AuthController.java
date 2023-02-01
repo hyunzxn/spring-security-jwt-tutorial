@@ -1,11 +1,9 @@
 package com.security.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,15 +24,17 @@ public class AuthController {
 	private final UserRepository userRepository;
 	private final JwtUtils jwtUtils;
 
+	// 토큰 만들어 주는 역할
 	@PostMapping("/authenticate")
 	public ResponseEntity<String> authenticate(@RequestBody AuthRequest request) {
-		authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-		);
+
+		// 넘어오는 Request 값을 기반으로 Authentication을 만든다 -> 인증을 시킨다.
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+
 		final UserDetails user = userRepository.findUserByEmail(request.getEmail());
 		if (user != null) {
-			return ResponseEntity.ok().body(jwtUtils.generateToken(user));
+			return ResponseEntity.ok().body(jwtUtils.generateToken(user)); // 토큰을 발급해준다.
 		}
-		return ResponseEntity.internalServerError().body("Some error Occured");
+		return ResponseEntity.internalServerError().body("Some error Occurred");
 	}
 }
